@@ -1,0 +1,9 @@
+grammar it.unige.csec.Lmet with org.eclipse.xtext.common.Terminals
+
+generate lmet "http://www.unige.it/csec/Lmet"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';
