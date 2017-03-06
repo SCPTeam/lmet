@@ -2,8 +2,65 @@ grammar it.unige.csec.Lmet with org.eclipse.xtext.common.Terminals
 
 generate lmet "http://www.unige.it/csec/Lmet"
 
-Model:
-	greetings+=Greeting*;
-	
-Greeting:
-	'Hello' name=ID '!';
+Program: 
+	term=Term
+;
+
+// left associative
+Term:
+	TerminalTerm (=>({Application.fun=current} arg=TerminalTerm)*)
+;
+
+TerminalTerm returns Term:
+	'(' Term ')' |
+	Constant |
+	Arithmetics |
+	Variable |
+	Abstraction
+;
+
+Constant: StringConstant | IntConstant ;
+
+StringConstant:
+	string=STRING
+;
+
+IntConstant:
+	int=INT
+;
+
+Arithmetics:
+	'-' term=Term
+;
+
+Variable:
+	ref=[Parameter]
+;
+
+Abstraction:
+	'lambda' param=Parameter '.' term=Term
+;
+
+Parameter:
+	name=ID (':' type=Type)?
+;
+
+// right associative
+Type:
+	TerminalType ({ArrowType.left = current} '->' right=Type)?
+;
+
+TerminalType returns Type:
+	'(' Type ')' |
+	BasicType |
+	TypeVariable
+;
+
+BasicType:
+	{IntType} 'int' |
+	{StringType} 'string'
+;
+
+TypeVariable:
+	typevarName=ID
+;
