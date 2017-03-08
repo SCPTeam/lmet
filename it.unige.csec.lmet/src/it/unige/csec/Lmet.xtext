@@ -1,5 +1,7 @@
 grammar it.unige.csec.Lmet with org.eclipse.xtext.common.Terminals
 
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
 generate lmet "http://www.unige.it/csec/Lmet"
 
 Program: 
@@ -13,24 +15,17 @@ Term:
 
 TerminalTerm returns Term:
 	'(' Term ')' |
-	Constant |
-	Arithmetics |
+	Unit |
+	Action |
 	Variable |
-	Abstraction
+	Abstraction |
+	Request |
+	SecFrame |
+	MetFrame
 ;
 
-Constant: StringConstant | IntConstant ;
-
-StringConstant:
-	string=STRING
-;
-
-IntConstant:
-	int=INT
-;
-
-Arithmetics:
-	'-' term=Term
+Action:
+	name=ID '(' res=ID ')'
 ;
 
 Variable:
@@ -41,8 +36,39 @@ Abstraction:
 	'lambda' param=Parameter '.' term=Term
 ;
 
+Unit:
+	'*'
+;
+
+SecFrame:
+	SecPolicy '[' sub=Term ']'
+;
+
+MetFrame:
+	MetPolicy '<' sub=Term '>'
+;
+
+SecPolicy:
+	'policy' name=ID
+;
+
+MetPolicy:
+	'ensure' Constraint 	
+;
+
+Constraint:
+	'>=' val=Float |
+	'<=' val=Float
+;
+
+Float returns ecore::EFloat: INT '.' INT;
+
 Parameter:
 	name=ID (':' type=Type)?
+;
+
+Request:
+	'request' name=ID ':' type=Type
 ;
 
 // right associative
@@ -57,8 +83,7 @@ TerminalType returns Type:
 ;
 
 BasicType:
-	{IntType} 'int' |
-	{StringType} 'string'
+	{UnitType} '1' 
 ;
 
 TypeVariable:
