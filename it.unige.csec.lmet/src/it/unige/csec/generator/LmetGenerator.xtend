@@ -18,6 +18,8 @@ import it.unige.csec.lmet.ActionDef
 import java.util.HashMap
 import it.unige.csec.lmet.impl.*
 import it.unige.csec.lmet.Action
+import it.unige.csec.lmet.SemiringDef
+import java.util.Vector
 
 /**
  * Generates code from your model files on save.
@@ -49,10 +51,19 @@ class LmetGenerator extends AbstractGenerator {
 	}
 	
 	def compile(Program p) {
+		var semirings = make_semirings(p.semirings)
+		vsize = semirings.size
 		var tab = make_table(p.table)
-		vsize = vector_size(p.table)
 		var root = "out"
 		preamble + "(declare-fun "+root+" (Int) Int)\n" + compile(p.term, tab, root) + conclusion
+	}
+	
+	def make_semirings(EList<SemiringDef> list) {
+		var semi = new Vector<Semiring>()
+		for(sd : list) {
+			semi.add(sd.semi)
+		}
+		semi
 	}
 	
 	def vector_size(EList<ActionDef> list) {
@@ -62,7 +73,9 @@ class LmetGenerator extends AbstractGenerator {
 	def make_table(EList<ActionDef> list) {
 		var map = new HashMap<Action,EList<Integer>>()
 		for(ActionDef ad : list) {
-			map.put((ad as ActionDefImpl).act, (ad as ActionDefImpl).vect)
+			if(ad.vect.size != vsize)
+				throw new UnsupportedOperationException("Wrong number of elements")
+			map.put(ad.act, ad.vect)
 		}
 		map 
 	}
